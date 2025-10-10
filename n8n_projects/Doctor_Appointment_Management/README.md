@@ -2,7 +2,7 @@
 
 A comprehensive AI-powered appointment booking system built with n8n that enables patients to book, manage, and pay for doctor appointments via WhatsApp. The system integrates with Google Sheets for data storage, Stripe for payment processing, and uses Google Gemini AI for intelligent conversational interactions.
 
-![System Overview](screenshots/system-overview.jpg)
+![System Overview](Screenshots/system-overview.jpg)
 
 ## 📋 Table of Contents
 
@@ -39,7 +39,7 @@ A comprehensive AI-powered appointment booking system built with n8n that enable
 - 💳 **Flexible Payment**: Stripe online payment or cash at clinic
 - 📱 **Real-time Updates**: Instant confirmation messages
 
-![WhatsApp Chat Interface](screenshots/whatsapp-interface.jpg)
+![WhatsApp Chat Interface](Screenshots/whatsapp-interface.jpg)
 
 ## 🏗️ System Architecture
 
@@ -52,12 +52,12 @@ Handles the core booking, viewing, rescheduling, and cancellation operations thr
 ### 2. Payment Link Generation
 Automatically generates and sends Stripe payment links when online payment is selected.
 
-![Payment Link Generation](screenshots/payment-link-workflow.jpg)
+![Payment Link Generation](Screenshots/payment-link-workflow.jpg)
 
 ### 3. Payment Confirmation
 Processes successful Stripe payments and updates appointment status.
 
-![Payment Confirmation Workflow](screenshots/payment-link-workflow.jpg)
+![Payment Confirmation Workflow](Screenshots/payment-link-workflow.jpg)
 
 ### 4. Refund Processing
 Handles automatic refunds and status updates for cancelled paid appointments.
@@ -66,7 +66,7 @@ Handles automatic refunds and status updates for cancelled paid appointments.
 ### 5. Appointment Reminders
 Scheduled daily reminders sent to patients with confirmed appointments.
 
-![Appointment Reminders Workflow](screenshots/reminder-workflow.jpg)
+![Appointment Reminders Workflow](Screenshots/reminder-workflow.jpg)
 
 ## 📦 Prerequisites
 
@@ -94,8 +94,6 @@ Scheduled daily reminders sent to patients with confirmed appointments.
    - API key from Google AI Studio
    - Enabled API access
 
-![Prerequisites Setup](screenshots/prerequisites.png)
-
 ## 🚀 Installation & Setup
 
 ### Step 1: Import Workflow to n8n
@@ -105,7 +103,6 @@ Scheduled daily reminders sent to patients with confirmed appointments.
 3. Select the `Doctor Appointment.json` file
 4. Click **Import**
 
-![Import Workflow](screenshots/import-workflow.png)
 
 ### Step 2: Configure Google Sheets
 
@@ -143,8 +140,6 @@ Scheduled daily reminders sent to patients with confirmed appointments.
 3. Note the Spreadsheet ID from the URL
 4. Update all Google Sheets nodes with your Spreadsheet ID
 
-![Google Sheets Structure](screenshots/google-sheets-structure.png)
-
 ### Step 3: Configure Credentials
 
 #### WhatsApp Credentials
@@ -155,7 +150,6 @@ Scheduled daily reminders sent to patients with confirmed appointments.
    - Access Token
    - Webhook verification token
 
-![WhatsApp Credentials](screenshots/whatsapp-credentials.png)
 
 #### Google Sheets OAuth2
 1. Open any Google Sheets node
@@ -163,7 +157,6 @@ Scheduled daily reminders sent to patients with confirmed appointments.
 3. Follow OAuth2 authentication flow
 4. Grant necessary permissions
 
-![Google Sheets OAuth](screenshots/google-oauth.png)
 
 #### Stripe API
 1. Navigate to Stripe nodes
@@ -173,14 +166,12 @@ Scheduled daily reminders sent to patients with confirmed appointments.
    ```
 3. Configure Stripe Trigger webhook
 
-![Stripe Configuration](screenshots/stripe-config.png)
 
 #### Google Gemini API
 1. Open Google Gemini Chat Model nodes
 2. Add your API key
 3. Configure model settings (optional)
 
-![Gemini Configuration](screenshots/gemini-config.png)
 
 ### Step 4: Configure Webhooks
 
@@ -193,7 +184,6 @@ Scheduled daily reminders sent to patients with confirmed appointments.
    - Add to Stripe Dashboard webhooks
    - Select event: `payment_intent.succeeded`
 
-![Webhook Configuration](screenshots/webhook-config.png)
 
 ### Step 5: Update Timezone & Settings
 
@@ -203,7 +193,6 @@ Scheduled daily reminders sent to patients with confirmed appointments.
    - Default: Daily at 16:17
    - Adjust as needed
 
-![Timezone Configuration](screenshots/timezone-config.png)
 
 ### Step 6: Test the Workflow
 
@@ -212,7 +201,6 @@ Scheduled daily reminders sent to patients with confirmed appointments.
 3. Follow the booking process
 4. Verify data is stored in Google Sheets
 
-![Testing Workflow](screenshots/testing.png)
 
 ## 🔧 Workflow Components
 
@@ -266,7 +254,6 @@ Scheduled daily reminders sent to patients with confirmed appointments.
 - **Appointment Remainder AI Agent**: Identifies today's appointments
 - **Send Message**: Sends reminder via WhatsApp
 
-![Node Architecture](screenshots/node-architecture.png)
 
 ## 👥 User Flow
 
@@ -342,7 +329,6 @@ Scheduled daily reminders sent to patients with confirmed appointments.
         [Payment link sent separately]
    ```
 
-![Booking Flow Diagram](screenshots/booking-flow.png)
 
 ### Viewing Bookings
 
@@ -391,7 +377,6 @@ Bot: Your appointment on 2025-10-12 at 11:00 has been cancelled.
      [If paid via Stripe: Refund has been initiated]
 ```
 
-![User Flow Diagram](screenshots/user-flow-complete.png)
 
 ## 💾 Database Structure
 
@@ -418,7 +403,6 @@ Bot: Your appointment on 2025-10-12 at 11:00 has been cancelled.
 4. **Status Updates**: Stripe webhook → Appointment status update
 5. **Refunds**: Cancelled appointment → Stripe refund → Status update
 
-![Database Schema](screenshots/database-schema.png)
 
 ## ⚙️ Configuration
 
@@ -461,7 +445,6 @@ In the **Schedule Trigger** node:
 - Adjust `triggerAtHour` and `triggerAtMinute`
 - Current: 16:17 (4:17 PM)
 
-![Configuration Settings](screenshots/configuration.png)
 
 ## 📱 Usage Examples
 
@@ -532,7 +515,7 @@ Bot: Patient added successfully!
      [Continues with date selection]
 ```
 
-![Usage Examples](screenshots/usage-examples.png)
+
 
 ## 🔌 API Integrations
 
@@ -686,7 +669,7 @@ Contributions are welcome! Here's how you can help:
 1. Check existing issues first
 2. Provide detailed description
 3. Include n8n version and error logs
-4. Share workflow execution screenshots
+4. Share workflow execution Screenshots
 
 ### Feature Requests
 1. Describe the feature clearly
