@@ -1,0 +1,2029 @@
+{
+  "name": "Resturant Order Automation",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "bbe0b035-830e-4b0c-8e25-9df1e1222227",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -288,
+        -64
+      ],
+      "id": "f2323cbe-a9b7-44db-849d-d8724d19cb6b",
+      "name": "Webhook",
+      "webhookId": "bbe0b035-830e-4b0c-8e25-9df1e1222227"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=user questiosn : {{ $json.body.message.toolCallList[0].function.arguments.user_question }}\n\nCustomer order : \n home address : {{ $json.body.message.toolCalls[0].function.arguments.home_address }}\n\n contact number : {{ $json.body.message.toolCalls[0].function.arguments.contact_number }}\n\n what to order : {{ $json.body.message.toolCalls[0].function.arguments.what_to_order }}\n\n customer full name : {{ $json.body.message.toolCalls[0].function.arguments.customer_full_name }}\n\n Special Instruction : {{ $json.body.message.toolCalls[0].function.arguments.special_instructions }}",
+        "options": {
+          "systemMessage": "=You are an AI assistant for a restaurant order system.\n\nYou have access to a PDF menu through RAG, so if the user asks for information about the menu — like item names, prices, or details — use that PDF to answer accurately.\n\nThe user has already completed a call with the voice assistant and provided their name, phone number, and the items they want to order.\n\nYour job is to:\n- Understand the user's order\n- Validate that the items exist in the menu\n- Summarize the order in a short message\n- Be polite and concise\n- Do not ask the user more questions\n\nAt the end, create a summary message\n\nDo not explain how the system works or mention AI.\nOnly focus on returning a natural, useful confirmation.\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -80,
+        -64
+      ],
+      "id": "3f9e387b-f79b-453a-a7b5-6b7ef2f23fde",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -80,
+        128
+      ],
+      "id": "25927abc-7bc0-4b82-a14d-1901c3568e14",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "{{GOOGLE_PALM_API_ID}}",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "1xX1BlP7Apqse_UKEwWHjTDxGERvfn91Q",
+          "mode": "list",
+          "cachedResultName": "Hassan_Restaurant_Menu.pdf",
+          "cachedResultUrl": "https://drive.google.com/file/d/1xX1BlP7Apqse_UKEwWHjTDxGERvfn91Q/view?usp=drivesdk"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -1664,
+        -288
+      ],
+      "id": "575d4363-ab67-4e58-bef0-c3ba9c360066",
+      "name": "Download file",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "{{GOOGLE_DRIVE_OAUTH2_ID}}",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -1456,
+        -16
+      ],
+      "id": "ce0e34df-3c91-4e9b-a6d2-0e763cb0eb10",
+      "name": "Embeddings OpenAI",
+      "credentials": {
+        "openAiApi": {
+          "id": "{{OPENAI_API_ID}}",
+          "name": "n8n free OpenAI API credits"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "resturant-orders-automation",
+          "mode": "list",
+          "cachedResultName": "resturant-orders-automation"
+        },
+        "options": {
+          "pineconeNamespace": "resturant-orders-auto"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.3,
+      "position": [
+        -1456,
+        -288
+      ],
+      "id": "8515ba69-98d8-417e-995f-5dfbcea805d2",
+      "name": "Pinecone Vector Store",
+      "credentials": {
+        "pineconeApi": {
+          "id": "{{PINECONE_API_ID}}",
+          "name": "PineconeApi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "dataType": "binary",
+        "textSplittingMode": "custom",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1.1,
+      "position": [
+        -1312,
+        -80
+      ],
+      "id": "7bfada03-9fab-434e-96a7-51db41c5044b",
+      "name": "Default Data Loader"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.textSplitterRecursiveCharacterTextSplitter",
+      "typeVersion": 1,
+      "position": [
+        -1216,
+        128
+      ],
+      "id": "2afeede0-bbca-4c50-9b22-bf745220d59b",
+      "name": "Recursive Character Text Splitter"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1824,
+        -272
+      ],
+      "id": "5eaa761c-02d1-4b8d-8632-e667426704ca",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "=Retrieves the most relevant document chunks from Pinecone based on user queries. Ideal for Retrieval-Augmented Generation (RAG) workflows, where AI must respond using real uploaded data such as restaurant menus, FAQs, or documents. This ensures accurate and grounded responses based on your own knowledge base.",
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "resturant-orders-automation",
+          "mode": "list",
+          "cachedResultName": "resturant-orders-automation"
+        },
+        "options": {
+          "pineconeNamespace": "resturant-orders-auto"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.3,
+      "position": [
+        64,
+        176
+      ],
+      "id": "9ed2d221-2745-4fd6-9f37-cf3bd8e6fd9d",
+      "name": "Pinecone Vector Store1",
+      "credentials": {
+        "pineconeApi": {
+          "id": "{{PINECONE_API_ID}}",
+          "name": "PineconeApi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        144,
+        320
+      ],
+      "id": "1c1f12db-1cbf-4174-a217-3050eebbcbdc",
+      "name": "Embeddings OpenAI1",
+      "credentials": {
+        "openAiApi": {
+          "id": "{{OPENAI_API_ID}}",
+          "name": "n8n free OpenAI API credits"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"results\": [\n    {\n        \"toolCallId\": \"{{ $('Webhook').item.json.body.message.toolCalls[0].id || ''}}\",\n\"result\": \"{{ $json.output.replace(/\"/g,'\\\\\"').replace(/\\n/g, '') || '' }}\"\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        512,
+        -432
+      ],
+      "id": "d523cf1b-758f-45ea-b034-af7871bb7d04",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "sendTo": "hassanahmed03305@gmail.com",
+        "subject": "Hi Owner, The customer placed an order.",
+        "message": "=<!doctype html>\n<html lang=\"en\">\n  <head>\n    <meta charset=\"utf-8\" />\n    <title>New Order Notification</title>\n  </head>\n  <body style=\"margin:0;padding:0;background-color:#f7f8fa;font-family:Arial,Helvetica,sans-serif;\">\n    <table align=\"center\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"max-width:600px;background-color:#ffffff;margin:auto;border-radius:10px;box-shadow:0 2px 10px rgba(0,0,0,0.08);\">\n      <tr>\n        <td style=\"background:linear-gradient(90deg,#ff7a18,#ff3d6f);color:#ffffff;padding:20px 25px;border-top-left-radius:10px;border-top-right-radius:10px;text-align:center;\">\n          <h2 style=\"margin:0;font-size:22px;\">🍴 New Order Received</h2>\n        </td>\n      </tr>\n      <tr>\n        <td style=\"padding:25px 30px;\">\n          <p style=\"font-size:16px;margin:0 0 15px 0;\">Hi <strong>{{ $('Webhook').item.json.body.message.toolCalls[0].function.arguments.customer_full_name }}</strong>,</p>\n          <p style=\"font-size:15px;margin:0 0 25px 0;color:#444444;\">You’ve received a new order at your restaurant. Here are the details:</p>\n\n          <table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"font-size:14px;color:#333333;border-collapse:collapse;\">\n            <tr>\n              <td style=\"padding:8px 0;font-weight:bold;width:180px;\">Customer Name:</td>\n              <td>{{ $('Webhook').item.json.body.message.toolCalls[0].function.arguments.customer_full_name }}</td>\n            </tr>\n            <tr>\n              <td style=\"padding:8px 0;font-weight:bold;\">Contact Number:</td>\n              <td><a href=\"tel:{{ $('Webhook').item.json.body.message.toolCalls[0].function.arguments.contact_number }}\" style=\"color:#ff3d6f;text-decoration:none;\">{{ $('Webhook').item.json.body.message.toolCalls[0].function.arguments.contact_number }}</a></td>\n            </tr>\n            <tr>\n              <td style=\"padding:8px 0;font-weight:bold;\">Item Ordered:</td>\n              <td>{{ $('Webhook').item.json.body.message.toolCalls[0].function.arguments.what_to_order }}</td>\n            </tr>\n            <tr>\n              <td style=\"padding:8px 0;font-weight:bold;vertical-align:top;\">Special Instructions:</td>\n              <td style=\"white-space:pre-line;\">{{ $('Webhook').item.json.body.message.toolCalls[0].function.arguments.special_instructions }}</td>\n            </tr>\n          </table>\n\n          <div style=\"text-align:center;margin-top:30px;\">\n            <a href=\"#\" style=\"background:linear-gradient(90deg,#ff7a18,#ff3d6f);color:#ffffff;text-decoration:none;padding:12px 24px;border-radius:6px;font-weight:bold;display:inline-block;font-size:15px;\">Accept Order</a>\n          </div>\n\n          <p style=\"font-size:13px;color:#888888;margin-top:25px;text-align:center;\">\n            You can contact the customer directly using the number above.<br>\n            Thank you for using <strong>Your Restaurant</strong> 🍽️\n          </p>\n        </td>\n      </tr>\n      <tr>\n        <td style=\"background-color:#f1f1f1;text-align:center;padding:12px;border-bottom-left-radius:10px;border-bottom-right-radius:10px;font-size:12px;color:#777777;\">\n          © 2025 Your Restaurant. All rights reserved.\n        </td>\n      </tr>\n    </table>\n  </body>\n</html>\n",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        864,
+        128
+      ],
+      "id": "1c91813a-e449-4d81-935a-735150e6fec8",
+      "name": "Send a message",
+      "webhookId": "2204fe2d-02f8-490b-a9ca-2cb1585d65a7",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "{{GMAIL_OAUTH2_ID}}",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "inputText": "={{ $json.output }}",
+        "categories": {
+          "categories": [
+            {
+              "category": "notify owner",
+              "description": "This process is responsible for handling messages related to customer order confirmations. It will analyze the received text and determine whether it is intended for sending an order confirmation to the customer.  If the message clearly indicates that it involves confirming an order to the customer, forward it for processing.  If the message does not match this requirement or is unrelated to customer confirmation, ignore it and do not pass it through for classification."
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.textClassifier",
+      "typeVersion": 1.1,
+      "position": [
+        528,
+        272
+      ],
+      "id": "80fe5a90-59ae-45c1-a4d1-4920a3f1539b",
+      "name": "Text Classifier"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        544,
+        464
+      ],
+      "id": "62604bc6-fceb-426f-861d-a0a30b023e35",
+      "name": "Google Gemini Chat Model1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "{{GOOGLE_PALM_API_ID}}",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.wassenger.com/v1/messages?token={{WASSENGER_TOKEN}}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "content-type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"phone\": \"+923305952439\",\n  \"message\": \"{{ $json.output ? $json.output.replace(/[\\n\\r]/g, ' ').replace(/\"/g, '\\\\\\\"') : '' }}\"\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1008,
+        -272
+      ],
+      "id": "11b3963d-4eb3-4357-8e9d-f602535520e6",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "inputText": "={{ $json.output }}",
+        "categories": {
+          "categories": [
+            {
+              "category": "notify owner",
+              "description": "This process is responsible for handling messages related to customer order confirmations. It will analyze the received text and determine whether it is intended for sending an order confirmation to the customer.  If the message clearly indicates that it involves confirming an order to the customer, forward it for processing.  If the message does not match this requirement or is unrelated to customer confirmation, ignore it and do not pass it through for classification."
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.textClassifier",
+      "typeVersion": 1.1,
+      "position": [
+        416,
+        -192
+      ],
+      "id": "616b0883-0460-450d-b884-d8f4e0f5777e",
+      "name": "Text Classifier1"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        496,
+        32
+      ],
+      "id": "0169a12c-9bbb-4c12-b9b3-64c42807d148",
+      "name": "Google Gemini Chat Model2",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "{{GOOGLE_PALM_API_ID}}",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    }
+  ],
+  "pinData": {
+    "Webhook": [
+      {
+        "json": {
+          "headers": {
+            "host": "pfpro.app.n8n.cloud",
+            "user-agent": "axios/1.8.3",
+            "content-length": "32250",
+            "accept": "application/json, text/plain, */*",
+            "accept-encoding": "gzip, br",
+            "baggage": "sentry-environment=production,sentry-public_key=a0021577936aec367b16615ad816c078,sentry-trace_id=5db406a057694578b8aaf489e773845c",
+            "cdn-loop": "cloudflare; loops=1; subreqs=1",
+            "cf-connecting-ip": "167.150.225.206",
+            "cf-ew-via": "15",
+            "cf-ipcountry": "US",
+            "cf-ray": "9909471866713abd-PDX",
+            "cf-visitor": "{\"scheme\":\"https\"}",
+            "cf-worker": "n8n.cloud",
+            "content-type": "application/json",
+            "content_type": "application/json",
+            "cookie": "callId=0199f80e-31ff-799e-98ee-abb3bec20832",
+            "sentry-trace": "5db406a057694578b8aaf489e773845c-8a26855648c7f7cb",
+            "x-call-id": "0199f80e-31ff-799e-98ee-abb3bec20832",
+            "x-forwarded-for": "167.150.225.206, 172.68.174.55",
+            "x-forwarded-host": "pfpro.app.n8n.cloud",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "traefik-prod-users-gwc-95-84b976bb6d-vlrkw",
+            "x-is-trusted": "yes",
+            "x-real-ip": "167.150.225.206",
+            "x-vapi-secret": ""
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "message": {
+              "timestamp": 1760803531528,
+              "type": "tool-calls",
+              "toolCalls": [
+                {
+                  "id": "call_a18sE8Vr04Eb3468W0HTjXVj",
+                  "type": "function",
+                  "function": {
+                    "name": "get_customer_data",
+                    "arguments": {
+                      "home_address": "",
+                      "what_to_order": "1 full chicken karahi – 1700 PKR, 1 BBQ chicken pizza – 1150 PKR, 1 cheeseburger – 750 PKR, 1 Zinger burger – 720 PKR",
+                      "contact_number": 923305952439,
+                      "customer_full_name": "Hassan Ahmed",
+                      "special_instructions": ""
+                    }
+                  }
+                }
+              ],
+              "toolCallList": [
+                {
+                  "id": "call_a18sE8Vr04Eb3468W0HTjXVj",
+                  "type": "function",
+                  "function": {
+                    "name": "get_customer_data",
+                    "arguments": {
+                      "home_address": "",
+                      "what_to_order": "1 full chicken karahi – 1700 PKR, 1 BBQ chicken pizza – 1150 PKR, 1 cheeseburger – 750 PKR, 1 Zinger burger – 720 PKR",
+                      "contact_number": 923305952439,
+                      "customer_full_name": "Hassan Ahmed",
+                      "special_instructions": ""
+                    }
+                  }
+                }
+              ],
+              "toolWithToolCallList": [
+                {
+                  "type": "function",
+                  "function": {
+                    "name": "get_customer_data",
+                    "parameters": {
+                      "type": "object",
+                      "required": [
+                        "customer_full_name",
+                        "contact_number",
+                        "what_to_order",
+                        "special_instructions",
+                        "home_address"
+                      ],
+                      "properties": {
+                        "home_address": {
+                          "type": "string",
+                          "default": "",
+                          "description": ""
+                        },
+                        "what_to_order": {
+                          "type": "string",
+                          "default": "",
+                          "description": ""
+                        },
+                        "contact_number": {
+                          "type": "number",
+                          "default": "",
+                          "description": ""
+                        },
+                        "customer_full_name": {
+                          "type": "string",
+                          "default": "",
+                          "description": "Store Customer Full Name"
+                        },
+                        "special_instructions": {
+                          "type": "string",
+                          "default": "",
+                          "description": ""
+                        }
+                      }
+                    },
+                    "description": "This tool is responsible to take/collect information from users to take their orders and sends these information to server"
+                  },
+                  "server": {
+                    "url": "https://pfpro.app.n8n.cloud/webhook/bbe0b035-830e-4b0c-8e25-9df1e1222227",
+                    "headers": {
+                      "content_type": "application/json"
+                    }
+                  },
+                  "messages": [
+                    {
+                      "type": "request-start",
+                      "content": "Please hold on i am processing your order.",
+                      "contents": [],
+                      "conditions": [],
+                      "blocking": false
+                    },
+                    {
+                      "type": "request-complete",
+                      "content": "Thanks for your patience!  \nYour order has been placed successfully.  \nYou’ll receive a confirmation shortly.  \nHave a nice day!",
+                      "contents": [],
+                      "conditions": [],
+                      "endCallAfterSpokenEnabled": true,
+                      "role": "assistant"
+                    },
+                    {
+                      "type": "request-failed",
+                      "content": "Something went wrong while processing your request. Please try again or check your connection. I am sorry for this. Bye..",
+                      "conditions": [],
+                      "contents": [],
+                      "endCallAfterSpokenEnabled": true
+                    }
+                  ],
+                  "toolCall": {
+                    "id": "call_a18sE8Vr04Eb3468W0HTjXVj",
+                    "type": "function",
+                    "function": {
+                      "name": "get_customer_data",
+                      "arguments": {
+                        "home_address": "",
+                        "what_to_order": "1 full chicken karahi – 1700 PKR, 1 BBQ chicken pizza – 1150 PKR, 1 cheeseburger – 750 PKR, 1 Zinger burger – 720 PKR",
+                        "contact_number": 923305952439,
+                        "customer_full_name": "Hassan Ahmed",
+                        "special_instructions": ""
+                      }
+                    }
+                  }
+                }
+              ],
+              "artifact": {
+                "messages": [
+                  {
+                    "role": "system",
+                    "message": "You are a **friendly and professional restaurant order assistant** at Hassan Restaurant.  \n\nYour goal is to **help customers place their food orders** accurately and politely. Use the defined tool **(get-data-for-taking-orders)** to collect all required order information — including the customer’s name, contact details, ordered items, quantity, delivery/pickup preference, and payment method — and send this data to the server once complete.  \n\nAlways gather every required detail using the tool. If a customer asks about the **menu, prices, or anything related to the restaurant**, answer them by using the same tool.  \n\nSpeak **clearly and naturally** throughout the conversation. If the customer sounds confused or has questions about the menu, assist them patiently. Before ending the call, always **confirm the final order** and **tell the customer the total price** of the items they ordered.  \n\nIf you are unsure about the customer’s name, **politely ask them to spell it out** so you can re...",
+                    "time": 1760803304119,
+                    "secondsFromStart": 0
+                  },
+                  {
+                    "role": "bot",
+                    "message": "Hi. Thanks for calling, and welcome to Hassan Restaurant. I'll be happy to help you place your order today. To begin, could you please tell me your full name?",
+                    "time": 1760803307887,
+                    "endTime": 1760803317577,
+                    "secondsFromStart": -4.966,
+                    "duration": 9060,
+                    "source": ""
+                  },
+                  {
+                    "role": "user",
+                    "message": "Okay. My name is Hassan Ahmed.",
+                    "time": 1760803318776.999,
+                    "endTime": 1760803320477,
+                    "secondsFromStart": 5.9239990234375,
+                    "duration": 1700.0009765625,
+                    "metadata": {
+                      "wordLevelConfidence": [
+                        {
+                          "word": "okay",
+                          "start": 14.389999,
+                          "end": 14.71,
+                          "confidence": 0.99658203,
+                          "punctuated_word": "Okay."
+                        },
+                        {
+                          "word": "my",
+                          "start": 14.71,
+                          "end": 14.87,
+                          "confidence": 0.9941406,
+                          "punctuated_word": "My"
+                        },
+                        {
+                          "word": "name",
+                          "start": 14.87,
+                          "end": 14.95,
+                          "confidence": 1,
+                          "punctuated_word": "name"
+                        },
+                        {
+                          "word": "is",
+                          "start": 14.95,
+                          "end": 15.2699995,
+                          "confidence": 0.99902344,
+                          "punctuated_word": "is"
+                        },
+                        {
+                          "word": "hassan",
+                          "start": 15.2699995,
+                          "end": 15.59,
+                          "confidence": 0.4116211,
+                          "punctuated_word": "Hassan"
+                        },
+                        {
+                          "word": "ahmed",
+                          "start": 15.59,
+                          "end": 16.09,
+                          "confidence": 0.66308594,
+                          "punctuated_word": "Ahmed."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "role": "bot",
+                    "message": "Thank you for sharing your name. Hassan Ahmed. Could you please confirm how you'd like your order? For delivery or pickup? Also, may I have your contact number to proceed?",
+                    "time": 1760803322627,
+                    "endTime": 1760803332827,
+                    "secondsFromStart": 9.774,
+                    "duration": 8350,
+                    "source": ""
+                  },
+                  {
+                    "role": "user",
+                    "message": "Okay. My contact number is plus 9 2 double 3 0 5 9 5 2. 4 3 9.",
+                    "time": 1760803333777,
+                    "endTime": 1760803339087,
+                    "secondsFromStart": 20.924,
+                    "duration": 5310,
+                    "metadata": {
+                      "wordLevelConfidence": [
+                        {
+                          "word": "okay",
+                          "start": 29.39,
+                          "end": 29.71,
+                          "confidence": 0.9975586,
+                          "punctuated_word": "Okay."
+                        },
+                        {
+                          "word": "my",
+                          "start": 29.71,
+                          "end": 29.949999,
+                          "confidence": 0.9970703,
+                          "punctuated_word": "My"
+                        },
+                        {
+                          "word": "contact",
+                          "start": 29.949999,
+                          "end": 30.43,
+                          "confidence": 1,
+                          "punctuated_word": "contact"
+                        },
+                        {
+                          "word": "number",
+                          "start": 30.43,
+                          "end": 30.67,
+                          "confidence": 1,
+                          "punctuated_word": "number"
+                        },
+                        {
+                          "word": "is",
+                          "start": 30.67,
+                          "end": 30.91,
+                          "confidence": 1,
+                          "punctuated_word": "is"
+                        },
+                        {
+                          "word": "plus",
+                          "start": 30.91,
+                          "end": 31.31,
+                          "confidence": 0.9951172,
+                          "punctuated_word": "plus"
+                        },
+                        {
+                          "word": "9",
+                          "start": 31.31,
+                          "end": 31.63,
+                          "confidence": 0.99316406,
+                          "punctuated_word": "9"
+                        },
+                        {
+                          "word": "2",
+                          "start": 31.63,
+                          "end": 31.95,
+                          "confidence": 0.97314453,
+                          "punctuated_word": "2"
+                        },
+                        {
+                          "word": "double",
+                          "start": 31.95,
+                          "end": 32.19,
+                          "confidence": 0.67041016,
+                          "punctuated_word": "double"
+                        },
+                        {
+                          "word": "3",
+                          "start": 32.19,
+                          "end": 32.43,
+                          "confidence": 0.99902344,
+                          "punctuated_word": "3"
+                        },
+                        {
+                          "word": "0",
+                          "start": 32.43,
+                          "end": 32.829998,
+                          "confidence": 0.99609375,
+                          "punctuated_word": "0"
+                        },
+                        {
+                          "word": "5",
+                          "start": 32.829998,
+                          "end": 32.989998,
+                          "confidence": 0.9892578,
+                          "punctuated_word": "5"
+                        },
+                        {
+                          "word": "9",
+                          "start": 32.989998,
+                          "end": 33.23,
+                          "confidence": 1,
+                          "punctuated_word": "9"
+                        },
+                        {
+                          "word": "5",
+                          "start": 33.23,
+                          "end": 33.63,
+                          "confidence": 0.99902344,
+                          "punctuated_word": "5"
+                        },
+                        {
+                          "word": "2",
+                          "start": 33.63,
+                          "end": 33.81,
+                          "confidence": 0.8635254,
+                          "punctuated_word": "2."
+                        },
+                        {
+                          "word": "4",
+                          "start": 34.13,
+                          "end": 34.29,
+                          "confidence": 0.9980469,
+                          "punctuated_word": "4"
+                        },
+                        {
+                          "word": "3",
+                          "start": 34.29,
+                          "end": 34.495003,
+                          "confidence": 0.99902344,
+                          "punctuated_word": "3"
+                        },
+                        {
+                          "word": "9",
+                          "start": 34.495003,
+                          "end": 34.7,
+                          "confidence": 0.9921875,
+                          "punctuated_word": "9."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "role": "bot",
+                    "message": "Thanks for providing your contact number as plus 9 2 3 0 5. Thank you. I've got your contact number, plus 92 3 0 5 9 5 2 4 3 9. Would you like your order for delivery or pickup? Also, let me know what you'd like to order. And if you need any help with the menu or prices, just let me know.",
+                    "time": 1760803340387,
+                    "endTime": 1760803360017,
+                    "secondsFromStart": 27.534,
+                    "duration": 18149.9970703125,
+                    "source": ""
+                  },
+                  {
+                    "role": "user",
+                    "message": "First of all, the phone number is wrong.",
+                    "time": 1760803361707,
+                    "endTime": 1760803364682,
+                    "secondsFromStart": 48.854,
+                    "duration": 2450,
+                    "metadata": {
+                      "wordLevelConfidence": [
+                        {
+                          "word": "first",
+                          "start": 57.32,
+                          "end": 57.64,
+                          "confidence": 0.75634766,
+                          "punctuated_word": "First"
+                        },
+                        {
+                          "word": "of",
+                          "start": 57.64,
+                          "end": 57.800003,
+                          "confidence": 0.9873047,
+                          "punctuated_word": "of"
+                        },
+                        {
+                          "word": "all",
+                          "start": 57.800003,
+                          "end": 58.04,
+                          "confidence": 0.99365234,
+                          "punctuated_word": "all,"
+                        },
+                        {
+                          "word": "the",
+                          "start": 58.04,
+                          "end": 58.440002,
+                          "confidence": 0.9941406,
+                          "punctuated_word": "the"
+                        },
+                        {
+                          "word": "phone",
+                          "start": 58.440002,
+                          "end": 58.68,
+                          "confidence": 0.99316406,
+                          "punctuated_word": "phone"
+                        },
+                        {
+                          "word": "number",
+                          "start": 58.68,
+                          "end": 59,
+                          "confidence": 0.99902344,
+                          "punctuated_word": "number"
+                        },
+                        {
+                          "word": "is",
+                          "start": 59,
+                          "end": 59.27,
+                          "confidence": 0.9980469,
+                          "punctuated_word": "is"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "role": "bot",
+                    "message": "I apologize for the mistake. Could you please repeat your contact number so I can get it right this time?",
+                    "time": 1760803366297,
+                    "endTime": 1760803371887,
+                    "secondsFromStart": 53.444,
+                    "duration": 5350,
+                    "source": ""
+                  },
+                  {
+                    "role": "user",
+                    "message": "It's plus 9 2 3 3 0 5 9 5 2 4 3 9.",
+                    "time": 1760803372947,
+                    "endTime": 1760803378847,
+                    "secondsFromStart": 60.094,
+                    "duration": 5900,
+                    "metadata": {
+                      "wordLevelConfidence": [
+                        {
+                          "word": "it's",
+                          "start": 68.56,
+                          "end": 69.04,
+                          "confidence": 0.8364258,
+                          "punctuated_word": "It's"
+                        },
+                        {
+                          "word": "plus",
+                          "start": 69.04,
+                          "end": 69.36,
+                          "confidence": 0.9970703,
+                          "punctuated_word": "plus"
+                        },
+                        {
+                          "word": "9",
+                          "start": 69.36,
+                          "end": 69.68,
+                          "confidence": 0.9980469,
+                          "punctuated_word": "9"
+                        },
+                        {
+                          "word": "2",
+                          "start": 69.68,
+                          "end": 70.08,
+                          "confidence": 0.99121094,
+                          "punctuated_word": "2"
+                        },
+                        {
+                          "word": "3",
+                          "start": 70.08,
+                          "end": 70.56,
+                          "confidence": 0.9892578,
+                          "punctuated_word": "3"
+                        },
+                        {
+                          "word": "3",
+                          "start": 70.56,
+                          "end": 70.96,
+                          "confidence": 0.99902344,
+                          "punctuated_word": "3"
+                        },
+                        {
+                          "word": "0",
+                          "start": 70.96,
+                          "end": 71.45,
+                          "confidence": 1,
+                          "punctuated_word": "0"
+                        },
+                        {
+                          "word": "5",
+                          "start": 72.25,
+                          "end": 72.409996,
+                          "confidence": 1,
+                          "punctuated_word": "5"
+                        },
+                        {
+                          "word": "9",
+                          "start": 72.409996,
+                          "end": 72.81,
+                          "confidence": 1,
+                          "punctuated_word": "9"
+                        },
+                        {
+                          "word": "5",
+                          "start": 72.81,
+                          "end": 73.21,
+                          "confidence": 0.99902344,
+                          "punctuated_word": "5"
+                        },
+                        {
+                          "word": "2",
+                          "start": 73.21,
+                          "end": 73.53,
+                          "confidence": 1,
+                          "punctuated_word": "2"
+                        },
+                        {
+                          "word": "4",
+                          "start": 73.53,
+                          "end": 73.77,
+                          "confidence": 0.9980469,
+                          "punctuated_word": "4"
+                        },
+                        {
+                          "word": "3",
+                          "start": 73.77,
+                          "end": 74.009995,
+                          "confidence": 0.99902344,
+                          "punctuated_word": "3"
+                        },
+                        {
+                          "word": "9",
+                          "start": 74.009995,
+                          "end": 74.46,
+                          "confidence": 0.9970703,
+                          "punctuated_word": "9."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "role": "bot",
+                    "message": "Thank you for correcting that. So your contact number is plus 9 2 3 3 0 5 9 2 4 3 9. Now would you like your order for delivery or pickup? And please let me know what you'd like to order.",
+                    "time": 1760803380647,
+                    "endTime": 1760803392777,
+                    "secondsFromStart": 67.794,
+                    "duration": 11229.986083984375,
+                    "source": ""
+                  },
+                  {
+                    "role": "user",
+                    "message": "It is strong.",
+                    "time": 1760803392367,
+                    "endTime": 1760803393117,
+                    "secondsFromStart": 79.514,
+                    "duration": 750,
+                    "metadata": {
+                      "wordLevelConfidence": [
+                        {
+                          "word": "it",
+                          "start": 87.98,
+                          "end": 88.23,
+                          "confidence": 0.44067383,
+                          "punctuated_word": "It"
+                        },
+                        {
+                          "word": "is",
+                          "start": 88.23,
+                          "end": 88.28,
+                          "confidence": 0.9448242,
+                          "punctuated_word": "is"
+                        },
+                        {
+                          "word": "strong",
+                          "start": 88.28,
+                          "end": 88.73,
+                          "confidence": 0.9199219,
+                          "punctuated_word": "strong."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "role": "bot",
+                    "message": "My sincere apologies for the mistake. It seems there was an error in repeating the number. Let me try again. Please confirm. Is your contact number plus 9 2 3 3 0 5 9 5 2 4 3 9?",
+                    "time": 1760803395257,
+                    "endTime": 1760803407217,
+                    "secondsFromStart": 82.404,
+                    "duration": 11400.006103515625,
+                    "source": ""
+                  },
+                  {
+                    "role": "user",
+                    "message": "Yes. Exactly.",
+                    "time": 1760803408307,
+                    "endTime": 1760803409207,
+                    "secondsFromStart": 95.454,
+                    "duration": 900,
+                    "metadata": {
+                      "wordLevelConfidence": [
+                        {
+                          "word": "yes",
+                          "start": 103.92,
+                          "end": 104.32,
+                          "confidence": 0.859375,
+                          "punctuated_word": "Yes."
+                        },
+                        {
+                          "word": "exactly",
+                          "start": 104.32,
+                          "end": 104.82,
+                          "confidence": 0.99853516,
+                          "punctuated_word": "Exactly."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "role": "bot",
+                    "message": "Thank you for your patience, Hassan. Now let's move on. Would you like your order for delivery or pickup? And let me know what you'd like to order or if you need help with the menu.",
+                    "time": 1760803411127.005,
+                    "endTime": 1760803420997,
+                    "secondsFromStart": 98.2740048828125,
+                    "duration": 9109.989990234375,
+                    "source": ""
+                  },
+                  {
+                    "role": "user",
+                    "message": "Okay. I want 1 Malibu tab.",
+                    "time": 1760803423967,
+                    "endTime": 1760803426227,
+                    "secondsFromStart": 111.114,
+                    "duration": 2260,
+                    "metadata": {
+                      "wordLevelConfidence": [
+                        {
+                          "word": "okay",
+                          "start": 119.58,
+                          "end": 120.08,
+                          "confidence": 0.9980469,
+                          "punctuated_word": "Okay."
+                        },
+                        {
+                          "word": "i",
+                          "start": 120.14,
+                          "end": 120.299995,
+                          "confidence": 0.9980469,
+                          "punctuated_word": "I"
+                        },
+                        {
+                          "word": "want",
+                          "start": 120.299995,
+                          "end": 120.619995,
+                          "confidence": 0.99902344,
+                          "punctuated_word": "want"
+                        },
+                        {
+                          "word": "1",
+                          "start": 120.619995,
+                          "end": 121.02,
+                          "confidence": 0.9921875,
+                          "punctuated_word": "1"
+                        },
+                        {
+                          "word": "malibu",
+                          "start": 121.02,
+                          "end": 121.34,
+                          "confidence": 0.7019043,
+                          "punctuated_word": "Malibu"
+                        },
+                        {
+                          "word": "tab",
+                          "start": 121.34,
+                          "end": 121.84,
+                          "confidence": 0.5620117,
+                          "punctuated_word": "tab."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "role": "bot",
+                    "message": "Could you",
+                    "time": 1760803424247,
+                    "endTime": 1760803425877.005,
+                    "secondsFromStart": 111.394,
+                    "duration": 1630.0048828125,
+                    "source": ""
+                  },
+                  {
+                    "role": "user",
+                    "message": "Bote Visa.",
+                    "time": 1760803426287,
+                    "endTime": 1760803427337,
+                    "secondsFromStart": 113.434,
+                    "duration": 1050,
+                    "metadata": {
+                      "wordLevelConfidence": [
+                        {
+                          "word": "bote",
+                          "start": 121.9,
+                          "end": 122.4,
+                          "confidence": 0.9675293,
+                          "punctuated_word": "Bote"
+                        },
+                        {
+                          "word": "visa",
+                          "start": 122.45,
+                          "end": 122.95,
+                          "confidence": 0.37524414,
+                          "punctuated_word": "Visa."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "role": "bot",
+                    "message": "It seems that Malibu tab is not on our menu.",
+                    "time": 1760803433267,
+                    "endTime": 1760803436087,
+                    "secondsFromStart": 120.414,
+                    "duration": 2820,
+                    "source": ""
+                  },
+                  {
+                    "toolCalls": [
+                      {
+                        "id": "call_yJuXuUkPVg0vNL8JQ03stgpp",
+                        "type": "function",
+                        "function": {
+                          "name": "read_menu",
+                          "arguments": "{\n  \"user_question\": \"What is included in a Malibu Tab, and its price?\"\n}"
+                        }
+                      }
+                    ],
+                    "role": "tool_calls",
+                    "message": "",
+                    "time": 1760803433440,
+                    "secondsFromStart": 120.587
+                  },
+                  {
+                    "role": "bot",
+                    "message": "Could you please check the name of the item?",
+                    "time": 1760803436267,
+                    "endTime": 1760803438127,
+                    "secondsFromStart": 123.414,
+                    "duration": 1860,
+                    "source": ""
+                  },
+                  {
+                    "role": "tool_call_result",
+                    "time": 1760803438000,
+                    "secondsFromStart": 125.147,
+                    "name": "read_menu",
+                    "result": "I am sorry, but \"Malibu Tab\" is not on the menu.",
+                    "metadata": {},
+                    "toolCallId": "call_yJuXuUkPVg0vNL8JQ03stgpp"
+                  },
+                  {
+                    "role": "bot",
+                    "message": "Or perhaps you're interested in a different dish.",
+                    "time": 1760803438626.99,
+                    "endTime": 1760803441126.99,
+                    "secondsFromStart": 125.77398999023437,
+                    "duration": 2500,
+                    "source": ""
+                  },
+                  {
+                    "role": "user",
+                    "message": "Okay. 1 chicken karah I have. 1 price, bbq, chicken pizza, cheeseburger, Zinger burger.",
+                    "time": 1760803442787,
+                    "endTime": 1760803452537,
+                    "secondsFromStart": 129.934,
+                    "duration": 5560.010009765625,
+                    "metadata": {
+                      "wordLevelConfidence": [
+                        {
+                          "word": "okay",
+                          "start": 138.4,
+                          "end": 138.8,
+                          "confidence": 0.888916,
+                          "punctuated_word": "Okay."
+                        },
+                        {
+                          "word": "1",
+                          "start": 138.8,
+                          "end": 138.95999,
+                          "confidence": 0.9921875,
+                          "punctuated_word": "1"
+                        },
+                        {
+                          "word": "chicken",
+                          "start": 138.95999,
+                          "end": 139.44,
+                          "confidence": 0.9667969,
+                          "punctuated_word": "chicken"
+                        },
+                        {
+                          "word": "karah",
+                          "start": 139.44,
+                          "end": 139.76,
+                          "confidence": 0.66296387,
+                          "punctuated_word": "karah"
+                        },
+                        {
+                          "word": "i",
+                          "start": 139.76,
+                          "end": 140.08,
+                          "confidence": 0.7680664,
+                          "punctuated_word": "I"
+                        },
+                        {
+                          "word": "have",
+                          "start": 140.08,
+                          "end": 140.45,
+                          "confidence": 0.67626953,
+                          "punctuated_word": "have."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "role": "bot",
+                    "message": "Thank you for your patience, Hassan.",
+                    "time": 1760803454667,
+                    "endTime": 1760803456527,
+                    "secondsFromStart": 141.814,
+                    "duration": 1860,
+                    "source": ""
+                  },
+                  {
+                    "toolCalls": [
+                      {
+                        "id": "call_S4qRoXzkp1GG3FVjdrMhyFFW",
+                        "type": "function",
+                        "function": {
+                          "name": "read_menu",
+                          "arguments": "{\n  \"user_question\": \"What is the price of Chicken Karahi?\"\n}"
+                        }
+                      }
+                    ],
+                    "role": "tool_calls",
+                    "message": "",
+                    "time": 1760803455305,
+                    "secondsFromStart": 142.452
+                  },
+                  {
+                    "role": "bot",
+                    "message": "Here's the information on the items you asked for.",
+                    "time": 1760803457407,
+                    "endTime": 1760803459257,
+                    "secondsFromStart": 144.554,
+                    "duration": 1850,
+                    "source": ""
+                  },
+                  {
+                    "role": "tool_call_result",
+                    "time": 1760803459046,
+                    "secondsFromStart": 146.193,
+                    "name": "read_menu",
+                    "result": "Chicken Karahi is available in two sizes:*   Half: 950 PKR*   Full: 1700 PKR",
+                    "metadata": {},
+                    "toolCallId": "call_S4qRoXzkp1GG3FVjdrMhyFFW"
+                  },
+                  {
+                    "role": "bot",
+                    "message": "1, half, 9 50, full. 1700 PKR. I'll now get details for the rest of your items. Items, chicken pizza, cheeseburger, and Zinger burger. Can you please specify if you want half or full chicken karahi? And would you like to know the prices for all barbecue items or specific ones?",
+                    "time": 1760803459577,
+                    "endTime": 1760803478227.01,
+                    "secondsFromStart": 146.724,
+                    "duration": 16949.989990234375,
+                    "source": ""
+                  },
+                  {
+                    "role": "user",
+                    "message": "If full chicken cry, Keep that current.",
+                    "time": 1760803479927,
+                    "endTime": 1760803487907,
+                    "secondsFromStart": 167.074,
+                    "duration": 2110,
+                    "metadata": {
+                      "wordLevelConfidence": [
+                        {
+                          "word": "if",
+                          "start": 175.54,
+                          "end": 175.7,
+                          "confidence": 0.76660156,
+                          "punctuated_word": "If"
+                        },
+                        {
+                          "word": "full",
+                          "start": 175.7,
+                          "end": 176.02,
+                          "confidence": 0.90625,
+                          "punctuated_word": "full"
+                        },
+                        {
+                          "word": "chicken",
+                          "start": 176.02,
+                          "end": 176.34,
+                          "confidence": 0.9863281,
+                          "punctuated_word": "chicken"
+                        },
+                        {
+                          "word": "cry",
+                          "start": 176.34,
+                          "end": 176.84,
+                          "confidence": 0.52685547,
+                          "punctuated_word": "cry,"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "role": "bot",
+                    "message": "Sorry. A few more seconds.",
+                    "time": 1760803489537.01,
+                    "endTime": 1760803490997,
+                    "secondsFromStart": 176.68401000976561,
+                    "duration": 1459.989990234375,
+                    "source": ""
+                  },
+                  {
+                    "toolCalls": [
+                      {
+                        "id": "call_SWrqlHQpm1a2xQaKkce6iAX5",
+                        "type": "function",
+                        "function": {
+                          "name": "read_menu",
+                          "arguments": "{\n  \"user_question\": \"What are the prices for BBQ items, a chicken pizza, a cheeseburger, and a Zinger burger?\"\n}"
+                        }
+                      }
+                    ],
+                    "role": "tool_calls",
+                    "message": "",
+                    "time": 1760803490170,
+                    "secondsFromStart": 177.317
+                  },
+                  {
+                    "role": "user",
+                    "message": "Sure.",
+                    "time": 1760803493037,
+                    "endTime": 1760803493387,
+                    "secondsFromStart": 180.184,
+                    "duration": 350,
+                    "metadata": {
+                      "wordLevelConfidence": [
+                        {
+                          "word": "sure",
+                          "start": 188.65,
+                          "end": 189,
+                          "confidence": 0.7130127,
+                          "punctuated_word": "Sure."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "role": "bot",
+                    "message": "Here are the prices for the items you've mentioned.",
+                    "time": 1760803495087.01,
+                    "endTime": 1760803497427.01,
+                    "secondsFromStart": 182.23401000976563,
+                    "duration": 2340,
+                    "source": ""
+                  },
+                  {
+                    "role": "tool_call_result",
+                    "time": 1760803497422,
+                    "secondsFromStart": 184.569,
+                    "name": "read_menu",
+                    "result": "Here are the prices for the items you requested:*   **BBQ Chicken Pizza**: 1150 PKR*   **Chicken Malai Boti**: 850 PKR*   **Beef Seekh Kabab**: 900 PKR*   **Chicken Tikka Pizza**: 990 PKR*   **Malai Boti Pizza**: 1100 PKR*   **Cheese Burger**: 750 PKR*   **Zinger Burger**: 720 PKR",
+                    "metadata": {},
+                    "toolCallId": "call_SWrqlHQpm1a2xQaKkce6iAX5"
+                  },
+                  {
+                    "role": "bot",
+                    "message": "Full chicken karahi, 1700 p k r b q chicken pizza. 11 50 p k r. Would you like me to proceed with ordering these items? If yes,",
+                    "time": 1760803497717,
+                    "endTime": 1760803507187,
+                    "secondsFromStart": 184.864,
+                    "duration": 8210.010009765625,
+                    "source": ""
+                  },
+                  {
+                    "role": "user",
+                    "message": "Yes. Go for it.",
+                    "time": 1760803507167,
+                    "endTime": 1760803508337,
+                    "secondsFromStart": 194.314,
+                    "duration": 1170,
+                    "metadata": {
+                      "wordLevelConfidence": [
+                        {
+                          "word": "yes",
+                          "start": 202.78,
+                          "end": 203.18001,
+                          "confidence": 0.88842773,
+                          "punctuated_word": "Yes."
+                        },
+                        {
+                          "word": "go",
+                          "start": 203.18001,
+                          "end": 203.34001,
+                          "confidence": 0.9194336,
+                          "punctuated_word": "Go"
+                        },
+                        {
+                          "word": "for",
+                          "start": 203.34001,
+                          "end": 203.5,
+                          "confidence": 0.94970703,
+                          "punctuated_word": "for"
+                        },
+                        {
+                          "word": "it",
+                          "start": 203.5,
+                          "end": 203.95,
+                          "confidence": 0.99365234,
+                          "punctuated_word": "it."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "role": "bot",
+                    "message": "let me Thank you. Let's finalize your order. Here's what we have. 1 full chicken karahi. 1700 p k r, 1 b pizza. 11 50. Sigmund and 50 p k arger. 7 20.",
+                    "time": 1760803507187,
+                    "endTime": 1760803523317.01,
+                    "secondsFromStart": 194.334,
+                    "duration": 10823.330078125,
+                    "source": ""
+                  },
+                  {
+                    "role": "user",
+                    "message": "It's okay.",
+                    "time": 1760803522846.99,
+                    "endTime": 1760803523667,
+                    "secondsFromStart": 209.99398999023438,
+                    "duration": 820.010009765625,
+                    "metadata": {
+                      "wordLevelConfidence": [
+                        {
+                          "word": "it's",
+                          "start": 218.45999,
+                          "end": 218.78,
+                          "confidence": 0.9206543,
+                          "punctuated_word": "It's"
+                        },
+                        {
+                          "word": "okay",
+                          "start": 218.78,
+                          "end": 219.28,
+                          "confidence": 0.9875488,
+                          "punctuated_word": "okay."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "toolCalls": [
+                      {
+                        "id": "call_a18sE8Vr04Eb3468W0HTjXVj",
+                        "type": "function",
+                        "function": {
+                          "name": "get_customer_data",
+                          "arguments": "{\n  \"home_address\": \"\",\n  \"what_to_order\": \"1 full chicken karahi – 1700 PKR, 1 BBQ chicken pizza – 1150 PKR, 1 cheeseburger – 750 PKR, 1 Zinger burger – 720 PKR\",\n  \"contact_number\": 923305952439,\n  \"customer_full_name\": \"Hassan Ahmed\",\n  \"special_instructions\": \"\"\n}"
+                        }
+                      }
+                    ],
+                    "role": "tool_calls",
+                    "message": "",
+                    "time": 1760803531522,
+                    "secondsFromStart": 218.669
+                  }
+                ],
+                "messagesOpenAIFormatted": [
+                  {
+                    "role": "system",
+                    "content": "You are a **friendly and professional restaurant order assistant** at Hassan Restaurant.  \n\nYour goal is to **help customers place their food orders** accurately and politely. Use the defined tool **(get-data-for-taking-orders)** to collect all required order information — including the customer’s name, contact details, ordered items, quantity, delivery/pickup preference, and payment method — and send this data to the server once complete.  \n\nAlways gather every required detail using the tool. If a customer asks about the **menu, prices, or anything related to the restaurant**, answer them by using the same tool.  \n\nSpeak **clearly and naturally** throughout the conversation. If the customer sounds confused or has questions about the menu, assist them patiently. Before ending the call, always **confirm the final order** and **tell the customer the total price** of the items they ordered.  \n\nIf you are unsure about the customer’s name, **politely ask them to spell it out** so you can re..."
+                  },
+                  {
+                    "role": "assistant",
+                    "content": "Hi. Thanks for calling, and welcome to Hassan Restaurant. I'll be happy to help you place your order today. To begin, could you please tell me your full name?"
+                  },
+                  {
+                    "role": "user",
+                    "content": "Okay. My name is Hassan Ahmed."
+                  },
+                  {
+                    "role": "assistant",
+                    "content": "Thank you for sharing your name. Hassan Ahmed. Could you please confirm how you'd like your order? For delivery or pickup? Also, may I have your contact number to proceed?"
+                  },
+                  {
+                    "role": "user",
+                    "content": "Okay. My contact number is plus 9 2 double 3 0 5 9 5 2. 4 3 9."
+                  },
+                  {
+                    "role": "assistant",
+                    "content": "Thanks for providing your contact number as plus 9 2 3 0 5. Thank you. I've got your contact number, plus 92 3 0 5 9 5 2 4 3 9. Would you like your order for delivery or pickup? Also, let me know what you'd like to order. And if you need any help with the menu or prices, just let me know."
+                  },
+                  {
+                    "role": "user",
+                    "content": "First of all, the phone number is wrong."
+                  },
+                  {
+                    "role": "assistant",
+                    "content": "I apologize for the mistake. Could you please repeat your contact number so I can get it right this time?"
+                  },
+                  {
+                    "role": "user",
+                    "content": "It's plus 9 2 3 3 0 5 9 5 2 4 3 9."
+                  },
+                  {
+                    "role": "assistant",
+                    "content": "Thank you for correcting that. So your contact number is plus 9 2 3 3 0 5 9 2 4 3 9. Now would you like your order for delivery or pickup? And please let me know what you'd like to order."
+                  },
+                  {
+                    "role": "user",
+                    "content": "It is strong."
+                  },
+                  {
+                    "role": "assistant",
+                    "content": "My sincere apologies for the mistake. It seems there was an error in repeating the number. Let me try again. Please confirm. Is your contact number plus 9 2 3 3 0 5 9 5 2 4 3 9?"
+                  },
+                  {
+                    "role": "user",
+                    "content": "Yes. Exactly."
+                  },
+                  {
+                    "role": "assistant",
+                    "content": "Thank you for your patience, Hassan. Now let's move on. Would you like your order for delivery or pickup? And let me know what you'd like to order or if you need help with the menu."
+                  },
+                  {
+                    "role": "user",
+                    "content": "Okay. I want 1 Malibu tab."
+                  },
+                  {
+                    "role": "assistant",
+                    "content": "Could you"
+                  },
+                  {
+                    "role": "user",
+                    "content": "Bote Visa."
+                  },
+                  {
+                    "role": "assistant",
+                    "content": "It seems that Malibu tab is not on our menu.",
+                    "tool_calls": [
+                      {
+                        "id": "call_yJuXuUkPVg0vNL8JQ03stgpp",
+                        "type": "function",
+                        "function": {
+                          "name": "read_menu",
+                          "arguments": "{\n  \"user_question\": \"What is included in a Malibu Tab, and its price?\"\n}"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "role": "tool",
+                    "tool_call_id": "call_yJuXuUkPVg0vNL8JQ03stgpp",
+                    "content": "I am sorry, but \"Malibu Tab\" is not on the menu."
+                  },
+                  {
+                    "role": "assistant",
+                    "content": "Could you please check the name of the item? Or perhaps you're interested in a different dish."
+                  },
+                  {
+                    "role": "user",
+                    "content": "Okay. 1 chicken karah I have. 1 price, bbq, chicken pizza, cheeseburger, Zinger burger."
+                  },
+                  {
+                    "role": "assistant",
+                    "content": "Thank you for your patience, Hassan.",
+                    "tool_calls": [
+                      {
+                        "id": "call_S4qRoXzkp1GG3FVjdrMhyFFW",
+                        "type": "function",
+                        "function": {
+                          "name": "read_menu",
+                          "arguments": "{\n  \"user_question\": \"What is the price of Chicken Karahi?\"\n}"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "role": "tool",
+                    "tool_call_id": "call_S4qRoXzkp1GG3FVjdrMhyFFW",
+                    "content": "Chicken Karahi is available in two sizes:*   Half: 950 PKR*   Full: 1700 PKR"
+                  },
+                  {
+                    "role": "assistant",
+                    "content": "Here's the information on the items you asked for. 1, half, 9 50, full. 1700 PKR. I'll now get details for the rest of your items. Items, chicken pizza, cheeseburger, and Zinger burger. Can you please specify if you want half or full chicken karahi? And would you like to know the prices for all barbecue items or specific ones?"
+                  },
+                  {
+                    "role": "user",
+                    "content": "If full chicken cry, Keep that current."
+                  },
+                  {
+                    "role": "assistant",
+                    "content": "Sorry. A few more seconds.",
+                    "tool_calls": [
+                      {
+                        "id": "call_SWrqlHQpm1a2xQaKkce6iAX5",
+                        "type": "function",
+                        "function": {
+                          "name": "read_menu",
+                          "arguments": "{\n  \"user_question\": \"What are the prices for BBQ items, a chicken pizza, a cheeseburger, and a Zinger burger?\"\n}"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "role": "tool",
+                    "tool_call_id": "call_SWrqlHQpm1a2xQaKkce6iAX5",
+                    "content": "Here are the prices for the items you requested:*   **BBQ Chicken Pizza**: 1150 PKR*   **Chicken Malai Boti**: 850 PKR*   **Beef Seekh Kabab**: 900 PKR*   **Chicken Tikka Pizza**: 990 PKR*   **Malai Boti Pizza**: 1100 PKR*   **Cheese Burger**: 750 PKR*   **Zinger Burger**: 720 PKR"
+                  },
+                  {
+                    "role": "user",
+                    "content": "Sure."
+                  },
+                  {
+                    "role": "assistant",
+                    "content": "Here are the prices for the items you've mentioned. Full chicken karahi, 1700 p k r b q chicken pizza. 11 50 p k r. Would you like me to proceed with ordering these items? If yes,"
+                  },
+                  {
+                    "role": "user",
+                    "content": "Yes. Go for it."
+                  },
+                  {
+                    "role": "assistant",
+                    "content": "let me Thank you. Let's finalize your order. Here's what we have. 1 full chicken karahi. 1700 p k r, 1 b pizza. 11 50. Sigmund and 50 p k arger. 7 20."
+                  },
+                  {
+                    "role": "user",
+                    "content": "It's okay."
+                  },
+                  {
+                    "role": "assistant",
+                    "tool_calls": [
+                      {
+                        "id": "call_a18sE8Vr04Eb3468W0HTjXVj",
+                        "type": "function",
+                        "function": {
+                          "name": "get_customer_data",
+                          "arguments": "{\n  \"home_address\": \"\",\n  \"what_to_order\": \"1 full chicken karahi – 1700 PKR, 1 BBQ chicken pizza – 1150 PKR, 1 cheeseburger – 750 PKR, 1 Zinger burger – 720 PKR\",\n  \"contact_number\": 923305952439,\n  \"customer_full_name\": \"Hassan Ahmed\",\n  \"special_instructions\": \"\"\n}"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "role": "tool",
+                    "tool_call_id": "call_a18sE8Vr04Eb3468W0HTjXVj",
+                    "content": "Tool Result Still Pending But Proceed Further If Possible."
+                  }
+                ]
+              },
+              "call": {
+                "id": "0199f80e-31ff-799e-98ee-abb3bec20832",
+                "orgId": "4e9fc517-9d76-4ede-945c-df0444ad4992",
+                "createdAt": "2025-10-18T16:01:43.935Z",
+                "updatedAt": "2025-10-18T16:01:43.935Z",
+                "type": "webCall",
+                "cost": 0,
+                "monitor": {
+                  "listenUrl": "wss://phone-call-websocket.aws-us-west-2-backend-production2.vapi.ai/0199f80e-31ff-799e-98ee-abb3bec20832/listen",
+                  "controlUrl": "https://phone-call-websocket.aws-us-west-2-backend-production2.vapi.ai/0199f80e-31ff-799e-98ee-abb3bec20832/control"
+                },
+                "transport": {
+                  "provider": "daily",
+                  "videoRecordingEnabled": false,
+                  "assistantVideoEnabled": false,
+                  "callUrl": "https://vapi.daily.co/P9LIWfVK7Z5jXcdCl39u"
+                },
+                "webCallUrl": "https://vapi.daily.co/P9LIWfVK7Z5jXcdCl39u",
+                "status": "queued",
+                "assistantId": "cf7582c1-619a-48b5-ba85-281d71553aa7",
+                "assistantOverrides": {
+                  "clientMessages": [
+                    "transcript",
+                    "hang",
+                    "metadata",
+                    "tool-calls",
+                    "tool-calls-result",
+                    "tool.completed",
+                    "transfer-update",
+                    "user-interrupted",
+                    "status-update"
+                  ],
+                  "variableValues": {}
+                }
+              },
+              "assistant": {
+                "id": "cf7582c1-619a-48b5-ba85-281d71553aa7",
+                "orgId": "4e9fc517-9d76-4ede-945c-df0444ad4992",
+                "name": "Resturant_Orders",
+                "voice": {
+                  "model": "tts-1",
+                  "voiceId": "alloy",
+                  "provider": "openai"
+                },
+                "createdAt": "2025-10-18T06:07:56.151Z",
+                "updatedAt": "2025-10-18T07:02:52.038Z",
+                "model": {
+                  "model": "gpt-4o",
+                  "toolIds": [
+                    "1df334c6-ff8e-4993-b489-80bb23434c61",
+                    "8094d3ad-549b-42ef-a6dc-d24a39376fa2"
+                  ],
+                  "messages": [
+                    {
+                      "role": "system",
+                      "content": "You are a **friendly and professional restaurant order assistant** at Hassan Restaurant.  \n\nYour goal is to **help customers place their food orders** accurately and politely. Use the defined tool **(get-data-for-taking-orders)** to collect all required order information — including the customer’s name, contact details, ordered items, quantity, delivery/pickup preference, and payment method — and send this data to the server once complete.  \n\nAlways gather every required detail using the tool. If a customer asks about the **menu, prices, or anything related to the restaurant**, answer them by using the same tool.  \n\nSpeak **clearly and naturally** throughout the conversation. If the customer sounds confused or has questions about the menu, assist them patiently. Before ending the call, always **confirm the final order** and **tell the customer the total price** of the items they ordered.  \n\nIf you are unsure about the customer’s name, **politely ask them to spell it out** so you can record it correctly.  \n\n---\n\n### Communication Style\n- **Tone:** Friendly, warm, and respectful  \n- **Style:** Natural, conversational, and human-like  \n- **Energy:** Calm and professional, not robotic  \n- **Pacing:** Speak slowly and clearly, especially for non-English speakers  \n- **Personality:** Polite, helpful, and patient  \n\n---\n\n### Guidelines\n- Avoid technical terms, robotic phrasing, or sounding scripted  \n- Use **simple words and short sentences**  \n- Sound like a **real restaurant staff member**  \n- Always **confirm what the customer says politely** before proceeding\n```\n"
+                    }
+                  ],
+                  "provider": "openai",
+                  "tools": [
+                    {
+                      "id": "1df334c6-ff8e-4993-b489-80bb23434c61",
+                      "createdAt": "2025-10-18T06:22:32.763Z",
+                      "updatedAt": "2025-10-18T16:00:10.285Z",
+                      "type": "function",
+                      "function": {
+                        "name": "get_customer_data",
+                        "parameters": {
+                          "type": "object",
+                          "required": [
+                            "customer_full_name",
+                            "contact_number",
+                            "what_to_order",
+                            "special_instructions",
+                            "home_address"
+                          ],
+                          "properties": {
+                            "home_address": {
+                              "type": "string",
+                              "default": "",
+                              "description": ""
+                            },
+                            "what_to_order": {
+                              "type": "string",
+                              "default": "",
+                              "description": ""
+                            },
+                            "contact_number": {
+                              "type": "number",
+                              "default": "",
+                              "description": ""
+                            },
+                            "customer_full_name": {
+                              "type": "string",
+                              "default": "",
+                              "description": "Store Customer Full Name"
+                            },
+                            "special_instructions": {
+                              "type": "string",
+                              "default": "",
+                              "description": ""
+                            }
+                          }
+                        },
+                        "description": "This tool is responsible to take/collect information from users to take their orders and sends these information to server"
+                      },
+                      "messages": [
+                        {
+                          "type": "request-start",
+                          "content": "Please hold on i am processing your order.",
+                          "blocking": false
+                        },
+                        {
+                          "role": "assistant",
+                          "type": "request-complete",
+                          "content": "Thanks for your patience!  \nYour order has been placed successfully.  \nYou’ll receive a confirmation shortly.  \nHave a nice day!",
+                          "endCallAfterSpokenEnabled": true
+                        },
+                        {
+                          "type": "request-failed",
+                          "content": "Something went wrong while processing your request. Please try again or check your connection. I am sorry for this. Bye..",
+                          "endCallAfterSpokenEnabled": true
+                        }
+                      ],
+                      "orgId": "4e9fc517-9d76-4ede-945c-df0444ad4992",
+                      "server": {
+                        "url": "https://pfpro.app.n8n.cloud/webhook/bbe0b035-830e-4b0c-8e25-9df1e1222227",
+                        "headers": {
+                          "content_type": "application/json"
+                        }
+                      }
+                    },
+                    {
+                      "id": "8094d3ad-549b-42ef-a6dc-d24a39376fa2",
+                      "createdAt": "2025-10-18T06:51:13.136Z",
+                      "updatedAt": "2025-10-18T15:59:55.638Z",
+                      "type": "function",
+                      "function": {
+                        "name": "read_menu",
+                        "parameters": {
+                          "type": "object",
+                          "required": [
+                            "user_question"
+                          ],
+                          "properties": {
+                            "user_question": {
+                              "type": "string",
+                              "default": "",
+                              "description": ""
+                            }
+                          }
+                        },
+                        "description": "This tool fetches detailed information from the restaurant's menu using Retrieval-Augmented Generation (RAG). The menu data is stored and processed in N8N. Use this tool when the user asks questions about food items, prices, ingredients, or availability.some questions regarding resturents if you cant find any relevent information tell the customer politly that sorry i cant find any option regarding that"
+                      },
+                      "messages": [
+                        {
+                          "type": "request-start",
+                          "blocking": false
+                        }
+                      ],
+                      "orgId": "4e9fc517-9d76-4ede-945c-df0444ad4992",
+                      "server": {
+                        "url": "https://pfpro.app.n8n.cloud/webhook/bbe0b035-830e-4b0c-8e25-9df1e1222227",
+                        "headers": {
+                          "content_type": "application/json"
+                        }
+                      }
+                    }
+                  ]
+                },
+                "firstMessage": "Hi, Assalam-u-Alaikum! Thanks for calling, and welcome to Hassan Restaurant. I’ll be happy to help you place your order today. To begin, could you please tell me your full name?",
+                "voicemailMessage": "Please call back when you're available.",
+                "endCallMessage": "Goodbye.",
+                "transcriber": {
+                  "model": "nova-2",
+                  "language": "en",
+                  "provider": "deepgram"
+                },
+                "clientMessages": [
+                  "transcript",
+                  "hang",
+                  "metadata",
+                  "tool-calls",
+                  "tool-calls-result",
+                  "tool.completed",
+                  "transfer-update",
+                  "user-interrupted",
+                  "status-update"
+                ],
+                "variableValues": {}
+              }
+            }
+          },
+          "webhookUrl": "https://pfpro.app.n8n.cloud/webhook/bbe0b035-830e-4b0c-8e25-9df1e1222227",
+          "executionMode": "production"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Text Classifier",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Text Classifier1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download file": {
+      "main": [
+        [
+          {
+            "node": "Pinecone Vector Store",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Pinecone Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "Pinecone Vector Store",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recursive Character Text Splitter": {
+      "ai_textSplitter": [
+        [
+          {
+            "node": "Default Data Loader",
+            "type": "ai_textSplitter",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Download file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pinecone Vector Store1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI1": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Pinecone Vector Store1",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Text Classifier",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Text Classifier": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Text Classifier1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Text Classifier1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "01626be0-ec61-4c23-ac75-6d7235bb2b0c",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "f57a0f19dcd5553693579dbcd7cbd61884acd7279768e8e42062ad0303afae70"
+  },
+  "id": "EbqI4YzQsDShfhz3",
+  "tags": []
+}
