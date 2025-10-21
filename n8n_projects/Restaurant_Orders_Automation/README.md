@@ -2,7 +2,7 @@
 
 A complete AI-powered voice ordering system that enables customers to place restaurant orders through natural phone conversations. The system uses voice AI, RAG (Retrieval Augmented Generation), and workflow automation to process orders, validate menu items, and send confirmations.
 
-![System Overview](system-overview.jpg)
+![System Overview](system-overview.png)
 ## 🎯 Project Overview
 
 This project automates the complete restaurant ordering process through an AI voice assistant. Customers can call the restaurant, speak naturally to place orders, get menu information, and receive instant confirmations—all without human intervention.
